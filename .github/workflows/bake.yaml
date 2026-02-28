@@ -1,0 +1,22 @@
+name: Bake Pi Engine
+on: [workflow_dispatch]
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-24.04-arm # Native ARM64 Server
+    steps:
+      - name: Install Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+
+      - name: Install and Compile
+        run: |
+          julia -e 'using Pkg; Pkg.add(["PythonCall", "DelayDiffEq", "PackageCompiler"])'
+          julia -e 'using PackageCompiler; create_sysimage(["PythonCall", "DelayDiffEq"]; sysimage_path="dde_engine.so")'
+
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: dde_engine_arm64
+          path: dde_engine.so
