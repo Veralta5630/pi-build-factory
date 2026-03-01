@@ -4,7 +4,7 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-24.04-arm64
-    # This force-feeds the target to Julia's brain before it even starts
+    # This force-feeds the target to Julia's brain
     env:
       JULIA_CPU_TARGET: "generic;armv8-a" 
 
