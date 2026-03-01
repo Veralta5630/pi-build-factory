@@ -5,7 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     env:
-      # We use a multi-target string: base ARMv8 (generic) + Pi 3/4/5 (cortex-a53)
+      # Multi-target string: Base ARMv8 + Raspberry Pi 3/4/5 optimizations
       JULIA_CPU_TARGET: "generic;cortex-a53" 
 
     steps:
@@ -18,21 +18,26 @@ jobs:
 
       - name: Check Target Environment
         run: |
-          echo "Intended Julia CPU Target: $JULIA_CPU_TARGET"
-          echo "Host Runner Hardware Info:"
+          echo "--- TARGET DIAGNOSTICS ---"
+          echo "Requested Target: $JULIA_CPU_TARGET"
+          echo "Runner Processor Info:"
           lscpu | grep "Model name"
-          julia -e 'using Dates; println("Build started at: ", now())'
+          echo "Supported LLVM Targets for this Julia Build:"
+          # This lists exactly what LLVM recognizes so you can catch typos early
+          julia -C help 2>&1 | grep -A 20 "Available CPUs" | head -n 25
+          echo "--------------------------"
 
       - name: Install and Compile
         run: |
-          # 1. Install necessary packages
+          # 1. Install packages (Julia will start precompiling for the runner host here)
           julia -e 'using Pkg; Pkg.add(["PythonCall", "DelayDiffEq", "PackageCompiler"])'
           
-          # 2. NUKE THE CACHE: This is critical.
-          # It deletes any host-optimized (Neoverse) precompiled files created by Pkg.add
+          # 2. NUKE THE CACHE:
+          # This deletes the Neoverse-optimized files generated in the step above.
+          # Without this, PackageCompiler will "steal" the host-optimized code.
           rm -rf ~/.julia/compiled/v1.10
           
-          # 3. Build the Sysimage from scratch for the Pi target
+          # 3. Build the Sysimage from scratch using our Raspberry Pi target
           julia -e '
             using PackageCompiler; 
             create_sysimage(["PythonCall", "DelayDiffEq"]; 
@@ -42,13 +47,12 @@ jobs:
 
       - name: Verify Architecture (The Final Check)
         run: |
-          # Check if the binary contains Neoverse strings. 
-          # If it does, we failed to isolate the build.
+          # The binary should NOT contain references to the runner's Neoverse chip
           if strings dde_engine.so | grep -qi "neoverse"; then
-            echo "❌ STILL TAINTED! Found Neoverse instructions in the image."
+            echo "ERROR: Neoverse instructions detected! The build is tainted."
             exit 1
           else
-            echo "✅ CLEAN! Image contains generic/cortex-a53 instructions."
+            echo "SUCCESS: Image is clean and Pi-compatible (cortex-a53)."
           fi
 
       - name: Upload Result
