@@ -40,7 +40,7 @@ jobs:
           # 3. Build the Sysimage from scratch using our Raspberry Pi target
           julia -e '
             using PackageCompiler; 
-            create_sysimage([""DelayDiffEq"]; 
+            create_sysimage(["DelayDiffEq"]; 
                             sysimage_path="minimalist_dde_engine.so", 
                             cpu_target="generic;cortex-a53", 
                             incremental=false)'
