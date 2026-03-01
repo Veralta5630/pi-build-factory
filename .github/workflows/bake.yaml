@@ -4,9 +4,9 @@ on: [workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-24.04-arm
-    # This force-feeds the target to Julia's brain
+    # This force-feeds the target to Julia's brain to use Pi-compatible architecture
     env:
-      JULIA_CPU_TARGET: "generic" 
+      JULIA_CPU_TARGET: "cortex-a53" 
 
     steps:
       - uses: actions/checkout@v4
@@ -23,16 +23,16 @@ jobs:
             using PackageCompiler; 
             create_sysimage(["PythonCall", "DelayDiffEq"]; 
                             sysimage_path="dde_engine.so", 
-                            cpu_target="generic", 
+                            cpu_target="cortex-a53", 
                             incremental=false)'
 
       - name: Verify Architecture (The Final Check)
         run: |
-          if strings dde_engine.so | grep -q "neoverse-n2" && ! strings dde_engine.so | grep -q "generic"; then
-            echo "STILL TAINTED! Only found Neoverse."
+          if strings dde_engine.so | grep -q "neoverse-n2" && ! strings dde_engine.so | grep -q "cortex-a53"; then
+            echo "STILL TAINTED! Found Neoverse."
             exit 1
           else
-            echo "CLEAN! Generic/ARMv8 targets found."
+            echo "CLEAN! Cortex-A53 target found."
           fi
 
       - name: Upload Result
