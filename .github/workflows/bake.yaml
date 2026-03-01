@@ -15,7 +15,12 @@ jobs:
           julia -e 'using Pkg; Pkg.add(["PythonCall", "DelayDiffEq", "PackageCompiler"])'
           julia -e 'using PackageCompiler; create_sysimage(["PythonCall", "DelayDiffEq"]; sysimage_path="dde_engine.so", cpu_target="generic")'
 
+      - name: Test the Engine
+        run: |
+          julia -J dde_engine.so -e 'using DelayDiffEq; println("TEST PASSED: Engine is Pi-ready!")'
+
       - name: Upload Result
+        if: success() # Only upload if the test passed!
         uses: actions/upload-artifact@v4
         with:
           name: dde_engine_arm64
