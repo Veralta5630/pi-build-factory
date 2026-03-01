@@ -3,7 +3,7 @@ on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-24.04-arm64
+    runs-on: ubuntu-24.04-arm
     # This force-feeds the target to Julia's brain
     env:
       JULIA_CPU_TARGET: "generic;armv8-a" 
