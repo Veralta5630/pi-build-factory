@@ -1,5 +1,5 @@
 name: Bake Julia Engine
-on: [workflow_dispatch]
+on: [push]
 
 jobs:
   build:
@@ -30,7 +30,7 @@ jobs:
       - name: Install and Compile
         run: |
           # 1. Install packages (Julia will start precompiling for the runner host here)
-          julia -e 'using Pkg; Pkg.add(["PythonCall", "DifferentialEquations", "PackageCompiler"])'
+          julia -e 'using Pkg; Pkg.add(["PythonCall", "DelayDiffEq", "PackageCompiler"])'
           
           # 2. NUKE THE CACHE:
           # This deletes the Neoverse-optimized files generated in the step above.
@@ -40,8 +40,8 @@ jobs:
           # 3. Build the Sysimage from scratch using our Raspberry Pi target
           julia -e '
             using PackageCompiler; 
-            create_sysimage(["PythonCall", "DifferentialEquations"]; 
-                            sysimage_path="dde_engine.so", 
+            create_sysimage([""DelayDiffEq"]; 
+                            sysimage_path="minimalist_dde_engine.so", 
                             cpu_target="generic;cortex-a53", 
                             incremental=false)'
 
