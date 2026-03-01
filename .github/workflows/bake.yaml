@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dde_engine_arm64
-          path: dde_engine.so
+          path: minimalist_dde_engine.so
