@@ -13,8 +13,13 @@ jobs:
       - name: Install and Compile
         run: |
           julia -e 'using Pkg; Pkg.add(["PythonCall", "DelayDiffEq", "PackageCompiler"])'
-          julia -e 'using PackageCompiler; create_sysimage(["PythonCall", "DelayDiffEq"]; sysimage_path="dde_engine.so", cpu_target="generic")'
-
+          julia -e '
+            using PackageCompiler; 
+            create_sysimage(["PythonCall", "DelayDiffEq"]; 
+                            sysimage_path="dde_engine.so", 
+                            cpu_target="generic;armv8-a", # Explicit baseline
+                            incremental=false)'            # Build from scratch
+        
       - name: Test the Engine
         run: |
           julia -J dde_engine.so -e 'using DelayDiffEq; println("TEST PASSED: Engine is Pi-ready!")'
