@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     # This force-feeds the target to Julia's brain
     env:
-      JULIA_CPU_TARGET: "generic;armv8-a" 
+      JULIA_CPU_TARGET: "generic" 
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
             using PackageCompiler; 
             create_sysimage(["PythonCall", "DelayDiffEq"]; 
                             sysimage_path="dde_engine.so", 
-                            cpu_target="generic;armv8-a", 
+                            cpu_target="generic", 
                             incremental=false)'
 
       - name: Verify Architecture (The Final Check)
